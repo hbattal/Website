@@ -1,0 +1,30 @@
+{
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "dev-host": "vite --host",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "deploy": "gh-pages -d dist",
+        "format": "prettier --write ."
+    },
+    "prettier": {
+        "useTabs": false,
+        "tabWidth": 4,
+        "printWidth": 1000000,
+        "bracketSameLine": true
+    },
+    "dependencies": {
+        "three": "^0.185.1",
+        "three.interactive": "^1.8.0",
+        "troika-three-text": "^0.52.4"
+    },
+    "devDependencies": {
+        "@types/three": "^0.185.0",
+        "gh-pages": "^6.3.0",
+        "globals": "^17.0.0",
+        "prettier": "^3.6.2",
+        "typescript": "^6.0.3",
+        "vite": "^8.0.10"
+    }
+}

@@ -1,0 +1,1 @@
+Currently two iterations of websites that work meh. I still dont know how to make a normal website so that will be next I think. 
