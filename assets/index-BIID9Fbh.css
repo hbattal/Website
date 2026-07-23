@@ -1,1 +1,0 @@
-@font-face{font-family:cr;src:url(/cr.ttf)}*,:before,:after{box-sizing:border-box}html,body{cursor:none;background-color:#000;height:100%;margin:0;font-family:cr;font-size:50px}canvas{touch-action:none;width:100%;height:100%;display:block}#loader{background:#fff;justify-content:center;align-items:center;width:100%;height:100%;transition:top .8s;display:flex;position:fixed;top:0}
