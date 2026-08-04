@@ -31,7 +31,5 @@ export abstract class Playable {
     abstract createScene(): void;
     abstract update(...args: any[]): void;
     abstract volumetrics(toggle: boolean): void;
-
     abstract sequence(time: number, start: boolean): void;
-    abstract dispose(): void;
 }

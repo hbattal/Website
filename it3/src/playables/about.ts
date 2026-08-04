@@ -56,14 +56,10 @@ export class About extends Playable {
     }
 
     createScene() {
-        const loader = new THREE.TextureLoader();
-
         const geom = new THREE.PlaneGeometry(1, 1.328125, 16, 16);
 
         //this will be top level manage for now + loading screen
-        for (let i = 1; i <= this.imNum; ++i) {
-            const tex = loader.load("/m" + i + ".jpg");
-
+        for (let i = 0; i < this.imNum; ++i) {
             //idea comes from: https://tympanus.net/codrops/2025/11/26/creating-wavy-infinite-carousels-in-react-three-fiber-with-glsl-shaders/
             const mat = new THREE.ShaderMaterial({
                 uniforms: {
@@ -98,7 +94,7 @@ export class About extends Playable {
                 `,
             });
 
-            mat.uniforms.image.value = tex;
+            mat.uniforms.image.value = this.state.aboutTexs[i];
 
             const mesh = new THREE.Mesh(geom, mat);
             this.meshes.push(mesh);
@@ -115,7 +111,7 @@ export class About extends Playable {
         this.back.text = "Back";
 
         this.state.canvas.addEventListener("wheel", (e) => {
-            this.velocity = Math.min(Math.max(this.velocity - e.deltaY / 10, -30), 30);
+            this.velocity = this.velocity - e.deltaY / 10;
         });
     }
 
@@ -125,12 +121,14 @@ export class About extends Playable {
 
         const dt = delta / 10;
 
+        this.velocity = Math.min(Math.max(this.velocity, -20), 20);
+
         for (let i = 0; i < this.imNum; ++i) {
             this.meshes[i].position.x += this.velocity * dt;
 
             this.meshes[i].position.x = left + ((((this.meshes[i].position.x - left) % dist) + dist) % dist);
 
-            this.meshes[i].material.uniforms.speed.value = this.velocity / 140.0;
+            this.meshes[i].material.uniforms.speed.value = this.velocity / 90.0;
         }
 
         this.velocity *= Math.pow(0.98, dt);
@@ -160,8 +158,10 @@ export class About extends Playable {
         if (start) time = Math.min(time, 1);
         else time = Math.max(1 - time, 0);
 
-        if(time >= 1 && start) this.state.interact.add(this.back);
-        if(time >= 1 && !start) this.state.interact.remove(this.back);
+        if (time === 1 && start) this.state.interact.add(this.back);
+        if (time === 0 && !start) {
+            this.state.interact.remove(this.back);
+        }
 
         this.back.scale.set(time, time, 1);
         this.about.scale.set(time, time, 1);
@@ -170,6 +170,4 @@ export class About extends Playable {
             this.meshes[i].scale.set(time * this.imWidth, time * this.imWidth, 1);
         }
     }
-
-    dispose(): void {}
 }

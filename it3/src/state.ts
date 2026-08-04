@@ -19,6 +19,7 @@ export class State {
 
     alg: HRC;
     active: Playable;
+    renderer: THREE.WebGLRenderer;
 
     mouse = { x: 9999, y: 9999 };
     mspos = { x: 9999, y: 9999 };
@@ -63,9 +64,25 @@ export class State {
     home: Playable;
     about: Playable;
 
+    homeTexs: (THREE.VideoTexture | null)[] = [null, null];
+    aboutTexs: THREE.Texture[] = [];
+    projectTexs: (THREE.Texture | THREE.VideoTexture | null)[] = [null, null, null, null];
+
+    loading = document.getElementById("loader")! as HTMLDivElement;
+    txt = document.getElementById("txt")! as HTMLSpanElement;
+
     constructor() {
+        this.init(); //stupid
+    }
+
+    async init() {
         this.canvas = document.querySelector("canvas")!;
         this.dpr = window.devicePixelRatio;
+
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
+
+        //load textures this is bad
+        await this.loadTextures();
 
         this.canvas.addEventListener("mousemove", (e) => {
             this.mouse.x = e.clientX;
@@ -130,12 +147,110 @@ export class State {
             this.cursor.add(this.children.at(-1)!);
         }
 
-        this.updateCursor();
-
         this.projects = new Projects(this.alg.fixWidth, this.alg.fixHeight, this);
         this.home = new Home(this.alg.fixWidth, this.alg.fixHeight, this);
         this.about = new About(this.alg.fixWidth, this.alg.fixHeight, this);
         this.active = this.home;
+
+        setTimeout(() => {
+            this.txt.textContent = "Halil Battal";
+
+            window.addEventListener("resize", () => {
+                this.updateBoot();
+            });
+
+            this.updateBoot();
+        }, 1000);
+
+        setTimeout(() => {
+            this.loading.style.background = "transparent";
+            this.txt.style.color = "transparent";
+        }, 1600);
+    }
+
+    async loadVideo(vid: HTMLVideoElement) {
+        return new Promise((res) => {
+            vid.oncanplaythrough = () => {
+                res(vid);
+            };
+        });
+    }
+
+    createVid(path: string) {
+        const video = document.createElement("video");
+        video.src = path;
+        video.loop = true;
+        video.muted = true;
+
+        return video;
+    }
+
+    //should be loadAll and compile everything at once
+    async loadTextures() {
+        //home, home, projects
+        const vidPaths = ["/home1.mp4", "/home2.mp4", "/back1.mp4"];
+        const imgPaths = ["/2d.png", "/path.png", "/gh.jpg"];
+
+        let proms: any = [];
+        let ind = 1;
+
+        const loader = new THREE.TextureLoader();
+        for (let i = 1; i <= 20; ++i) {
+            const prom = loader.loadAsync("/m" + i + ".jpg").then((tex) => {
+                this.aboutTexs.push(tex);
+                this.renderer.initTexture(tex);
+                this.updateLoader(ind++);
+            });
+
+            proms.push(prom);
+        }
+
+        for (let i = 0; i < imgPaths.length; ++i) {
+            const prom = loader.loadAsync(imgPaths[i]).then((tex) => {
+                this.projectTexs[i] = tex;
+                this.renderer.initTexture(tex);
+
+                this.updateLoader(ind++);
+            });
+
+            proms.push(prom);
+        }
+
+        for (let i = 0; i < 3; ++i) {
+            const video = this.createVid(vidPaths[i]);
+
+            const prom = this.loadVideo(video).then(() => {
+                video.play();
+
+                const tex = new THREE.VideoTexture(video);
+                this.renderer.initTexture(tex);
+
+                if (i === 2) this.projectTexs[3] = tex;
+                else this.homeTexs[i] = tex;
+
+                this.updateLoader(ind++);
+            });
+
+            proms.push(prom);
+        }
+
+        await Promise.all(proms);
+    }
+
+    updateLoader(prog: number) {
+        this.txt.textContent = "Loading " + ((prog / 26) * 100).toFixed(0) + "%";
+    }
+
+    updateBoot() {
+        this.txt.style.fontSize = "100px"; //if its small its bad i have no idea why
+        const bbox = this.txt.getBoundingClientRect();
+        const w = bbox.width;
+        const h = bbox.height;
+
+        const aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+        const scale = (Math.min(this.canvas.clientWidth / w, this.canvas.clientHeight / h) / (aspect <= 1 ? 1.1 : 1.6)) * 100;
+
+        this.txt.style.fontSize = scale + "px";
     }
 
     exitSeq(room: string) {
@@ -164,7 +279,7 @@ export class State {
 
     updateCursor() {
         const aspect = this.alg.fixWidth / this.alg.fixHeight;
-        const use = aspect <= 1 ? this.alg.fixHeight : this.alg.fixWidth;
+        const use = aspect <= 1 ? this.alg.fixWidth * 1.9 : this.alg.fixWidth * 1.2;
 
         this.parentScale = use / 140;
         this.childrenScale = use / 215;
@@ -175,7 +290,7 @@ export class State {
             this.children[i].scale.set(this.childrenScale, this.childrenScale, 1);
         }
 
-        this.cursorScale = use / 45;
+        this.cursorScale = use / 47;
     }
 
     update() {
@@ -197,6 +312,8 @@ export class State {
             this.pspos = this.mspos;
             this.matchPos = false;
         }
+
+        this.updateCursor();
 
         this.interact.camera = this.active.camera;
         this.interact.update();

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Text } from "troika-three-text";
 import { Playable } from "./playable";
 import type { State } from "../state";
-import { addCursor, loadVideo, textSettings } from "./utils";
+import { addCursor, textSettings } from "./utils";
 
 export class Home extends Playable {
     name: any;
@@ -21,32 +21,22 @@ export class Home extends Playable {
         this.state = state;
 
         this.createScene();
-        this.reset();
+
+        this.about.fontSize = this.projects.fontSize = this.name.fontSize = 1;
+        const texts = [this.name, this.projects, this.about];
+
+        texts.forEach((text) => {
+            text.sync(() => {
+                this.upd++;
+                if (this.upd === 3) this.reset();
+            });
+        });
     }
 
     reset() {
-        this.about.fontSize = this.projects.fontSize = this.name.fontSize = Math.random(); //wont update without
+        if (this.upd !== 3) return;
 
-        this.name.sync(() => {
-            this.upd++;
-            if (this.upd === 3) this.calcBounds();
-        });
-
-        this.projects.sync(() => {
-            this.upd++;
-            if (this.upd === 3) this.calcBounds();
-        });
-
-        this.about.sync(() => {
-            this.upd++;
-            if (this.upd === 3) this.calcBounds();
-        });
-    }
-
-    calcBounds() {
         const aspect = this.width / this.height;
-
-        this.upd = 0;
 
         const width = this.name.geometry.boundingBox.max.x - this.name.geometry.boundingBox.min.x;
         const height = this.name.geometry.boundingBox.max.y - this.name.geometry.boundingBox.min.y;
@@ -54,7 +44,7 @@ export class Home extends Playable {
         const widthProject = this.projects.geometry.boundingBox.max.x - this.projects.geometry.boundingBox.min.x;
         const widthAbout = this.about.geometry.boundingBox.max.x - this.about.geometry.boundingBox.min.x;
 
-        this.scale = Math.min(this.width / width, this.height / height) / (aspect <= 1 ? 1.1 : 2); //different rule for mobile
+        this.scale = Math.min(this.width / width, this.height / height) / (aspect <= 1 ? 1.1 : 1.6); //different rule for mobile
         this.childScale = this.scale / 3;
 
         this.name.scale.set(this.scale, this.scale, 1);
@@ -106,8 +96,8 @@ export class Home extends Playable {
             }`,
         });
 
-        mat.uniforms.tex.value = loadVideo("/c.mp4");
-        mat.uniforms.tex2.value = loadVideo("/c2.mp4");
+        mat.uniforms.tex.value = this.state.homeTexs[0];
+        mat.uniforms.tex2.value = this.state.homeTexs[1];
 
         this.name = new Text();
         this.projects = new Text();
@@ -139,11 +129,11 @@ export class Home extends Playable {
         if (start) time = Math.min(time, 1);
         else time = Math.max(1 - time, 0);
 
-        if(time >= 1 && start) {
+        if (time === 1 && start) {
             this.state.interact.add(this.projects);
             this.state.interact.add(this.about);
         }
-        if(time >= 1 && !start) {
+        if (time === 0 && !start) {
             this.state.interact.remove(this.projects);
             this.state.interact.remove(this.about);
         }
@@ -156,6 +146,4 @@ export class Home extends Playable {
     update() {}
 
     volumetrics(_toggle: boolean): void {}
-
-    dispose(): void {}
 }

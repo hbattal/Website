@@ -1,5 +1,4 @@
 import type { State } from "../state";
-import * as THREE from "three";
 
 export function textSettings(mesh: any, bold: boolean) {
     mesh.textAlign = "center";
@@ -12,10 +11,12 @@ export function textSettings(mesh: any, bold: boolean) {
 
 export function addCursor(mesh: any, state: State, some: string | null) {
     mesh.addEventListener("mouseenter", (_e: any) => {
+        //console.log("entered");
         state.changeCursor(true);
     });
 
     mesh.addEventListener("mouseleave", (_e: any) => {
+        //console.log("exited");
         state.changeCursor(false);
     });
 
@@ -24,15 +25,4 @@ export function addCursor(mesh: any, state: State, some: string | null) {
             state.exitSeq(some);
         });
     }
-}
-
-export function loadVideo(path: string){
-    const video = document.createElement("video");
-    video.src = path;
-    video.loop = true;
-    video.muted = true;
-    video.volume = 0;
-    video.play();
-
-    return new THREE.VideoTexture(video);
 }

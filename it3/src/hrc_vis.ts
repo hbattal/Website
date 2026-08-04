@@ -48,7 +48,8 @@ export class HRC {
     constructor(state: State) {
         this.state = state;
 
-        this.renderer = new THREE.WebGLRenderer({ canvas: this.state.canvas, antialias: true });
+        this.renderer = state.renderer;
+
         this.renderer.autoClear = false;
         this.renderer.setClearColor(0x000000, 0); //premultiplied
         this.renderer.info.autoReset = false;

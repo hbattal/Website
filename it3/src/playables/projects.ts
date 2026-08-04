@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Playable } from "./playable";
 import type { State } from "../state";
 import { Text } from "troika-three-text";
-import { addCursor, loadVideo, textSettings } from "./utils";
+import { addCursor, textSettings } from "./utils";
 
 export class Projects extends Playable {
     texture: THREE.Texture;
@@ -40,7 +40,7 @@ export class Projects extends Playable {
 
         const mobile = aspect <= 1;
 
-        let scale = Math.min(this.width / this.vw, this.height / this.vh) * (mobile ? 0.8 : 0.4);
+        let scale = Math.min(this.width / this.vw, this.height / this.vh) * (mobile ? 0.8 : 0.44);
 
         //yes hacky but if anyone has a gigantic aspect ratio atp its not my fault
         if (aspect > this.vw / this.vh) {
@@ -63,8 +63,8 @@ export class Projects extends Playable {
             this.media.position.set(0, this.actualHeight / 2, -1);
             this.front.position.set(0, this.actualHeight / 2, -1);
 
-            this.back.position.set(-this.actualWidth / 2, this.actualHeight / 2 + this.actualHeight / 1.5, -1);
-            this.next.position.set(this.actualWidth / 2, this.actualHeight / 2 + this.actualHeight / 1.5, -1);
+            this.back.position.set(-this.actualWidth / 2.25, this.actualHeight / 2 + this.actualHeight / 1.5, -1);
+            this.next.position.set(this.actualWidth / 2.25, this.actualHeight / 2 + this.actualHeight / 1.5, -1);
             this.projText.position.set(0, -this.actualHeight / 2, 0);
         } else {
             this.media.position.set(-this.actualWidth / 2, 0, -1);
@@ -93,12 +93,11 @@ export class Projects extends Playable {
         this.back.text = "Back";
         this.next.text = "Next";
 
-        const loader = new THREE.TextureLoader();
-        this.texture2 = loader.load("/2d.png");
-        this.texture3 = loader.load("/path.png");
-        this.frontTexture = loadVideo("/c4.mp4");
+        this.texture2 = this.state.projectTexs[0]!;
+        this.texture3 = this.state.projectTexs[1]!;
+        this.texture = this.state.projectTexs[2]!;
 
-        this.texture = loader.load("/gh.jpg");
+        this.frontTexture = this.state.projectTexs[3]!; //vid
 
         const geom = new THREE.PlaneGeometry(1, 1);
 
@@ -108,7 +107,7 @@ export class Projects extends Playable {
         const mat2 = new THREE.MeshBasicMaterial({ map: this.texture });
         this.front = new THREE.Mesh(geom, mat2);
 
-        const text = "See my github (click on the picture), I am planning to have more on there as I keep learning about new technologies. ";
+        const text = "See my github (click on the picture), I am planning to have more on there as I keep learning about new technologies. Currently learning C++, reading some textbooks, and making a new full-stack project.";
         const lightsText = "2D Global Illumination with Holographic Radiance Cascades. I initially saw a basic version of 2DGI on Lusion's Akari project. After going down the rabbit hole of tracing, Radiance Cascades, and finally Holographic Radiance Cascades, I ended up with this little playground. I hope to add more modes as I have more ideas. This website is also using the same algorithm!";
         const pathText = "You can have a path tracer on the web! This is no new technology, as WebGL has existed for some time. But what if I told you this project is also written in Rust? Yep, apparently that is possible, doesn't it feel like magic?. Anyways, this is a basic PBR path tracer, currently it's pretty barebones. This was as far as I was able to get without reading PBRT, so the time has come.";
 
@@ -148,12 +147,12 @@ export class Projects extends Playable {
         if (start) time = Math.min(time, 1);
         else time = Math.max(1 - time, 0);
 
-        if(time >= 1 && start) {
+        if (time === 1 && start) {
             this.state.interact.add(this.back);
             this.state.interact.add(this.next);
             this.state.interact.add(this.media);
         }
-        if(time >= 1 && !start) {
+        if (time === 0 && !start) {
             this.state.interact.remove(this.back);
             this.state.interact.remove(this.next);
             this.state.interact.remove(this.media);
@@ -185,6 +184,4 @@ export class Projects extends Playable {
             this.scene.add(this.state.cursor);
         }
     }
-
-    dispose() {}
 }
